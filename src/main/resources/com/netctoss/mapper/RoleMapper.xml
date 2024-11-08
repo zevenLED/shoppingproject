@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.netctoss.mapper.RoleMapper">
+    <resultMap id="roleMap" type="com.netctoss.pojo.Role">
+        <id column="role_id" property="roleId"/>
+        <result column="roleName" property="roleName"/>
+        <result property="privilegeName" column="privilegeName"/>
+
+    </resultMap>
+<!--    <update id="Update2">-->
+<!--        -->
+<!--    </update>-->
+    <!--    &lt;!&ndash; 插入角色信息 &ndash;&gt;-->
+<!--    <insert id="insertRole" parameterType="com.ssm.netctoss.pojo.Role" useGeneratedKeys="true" keyProperty="roleId">-->
+<!--        INSERT INTO role_info (rname) VALUES (#{name})-->
+<!--    </insert>-->
+    <!--    <insert id="addPrivilege">-->
+<!--        INSERT into  role_privilege-->
+<!--        (role_id,privilege_id)values((select role_id from admin_role-->
+<!--        where admin_id=(select admin_id from admin_info where name=#{name})),#{privilegeID})-->
+<!--    </insert>-->
+    <select id="findAll" resultMap="roleMap">
+<!--        SELECT-->
+<!--        admin_info.admin_id,-->
+<!--        admin_info.name,-->
+<!--        GROUP_CONCAT(role_info.rname SEPARATOR ',') AS role_names-->
+<!--        FROM-->
+<!--        admin_info,-->
+<!--        admin_role,-->
+<!--        role_info-->
+<!--        WHERE-->
+<!--        admin_info.admin_id = admin_role.admin_id-->
+<!--        AND role_info.role_id = admin_role.role_id-->
+<!--        GROUP BY-->
+<!--        admin_info.admin_id,-->
+<!--        admin_info.admin_code-->
+        select
+        r.role_id,r.rname as roleName,
+        GROUP_CONCAT(p.name) as privilegeName
+        from role_privilege rp
+        right join role_info r on r.role_id = rp.role_id
+        left join privilege_info p on p.privilege_id = rp.privilege_id
+        group by r.role_id
+    </select>
+
+    <resultMap id="RoleMap2" type="com.netctoss.pojo.Role">
+        <id property="roleId" column="role_id"/>
+        <result property="roleName" column="rname"/>
+        <collection property="privilegeIds" select="com.ssm.netctoss.mapper.PrivilegeMapper.findBySecondStep" column="role_id"/>
+    </resultMap>
+
+    <select id="findRoleAndPri" resultMap="RoleMap2">
+        select role_id,rname
+        from role_info
+        where role_id = #{roleId}
+    </select>
+</mapper>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.netctoss.mapper.AdminMapper">
+    <resultMap id="adminMap" type="com.netctoss.pojo.Admin">
+        <id column="admin_id" property="adminId"/>
+        <result column="admin_code" property="adminCode"/>
+        <result column="password" property="password"></result>
+        <result column="name" property="name"/>
+        <result column="telephone" property="telephone"></result>
+        <result column="email" property="email"/>
+        <result column="enrolldate" property="enrolldate"></result>
+        <result column="rname" property="roleinfoName"></result>
+    </resultMap>
+    <update id="updateAdmin" parameterType="object">
+        update admin_info set name=#{name},telephone=#{telephone},email=#{email} where admin_code=#{adminCode};
+    </update>
+    <update id="updatepassword" parameterType="object">
+        update admin_info set password=#{password} where admin_id=#{adminId};
+    </update>
+    <select id="Checklogin2" resultMap="adminMap" parameterType="object">
+        select admin_info.admin_id, admin_info.admin_code,role_info.rname,admin_info.password,admin_info.name,admin_info.telephone, admin_info.email,admin_info.enrolldate
+        from admin_info LEFT JOIN admin_role ON admin_info.admin_id=admin_role.admin_id
+        LEFT JOIN role_info ON role_info.role_id=admin_role.role_id
+        where admin_info.admin_id=#{adminId};
+    </select>
+    <select id="Checklogin" resultMap="adminMap" parameterType="object">
+        select admin_info.admin_id, admin_info.admin_code,role_info.rname,admin_info.password,admin_info.name,admin_info.telephone, admin_info.email,admin_info.enrolldate
+        from admin_info LEFT JOIN admin_role ON admin_info.admin_id=admin_role.admin_id
+        LEFT JOIN role_info ON role_info.role_id=admin_role.role_id
+        where admin_code=#{adminCode} and password=#{password};
+    </select>
+    <select id="findByPageAndCondition" resultType="com.netctoss.pojo.Admin">
+
+    </select>
+
+</mapper>

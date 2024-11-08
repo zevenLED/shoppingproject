@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.netctoss.mapper.ServiceMapper">
+    <resultMap id="serviceMap" type="com.netctoss.pojo.Service">
+        <id column="service_id" property="serviceId"/>
+        <result column="account_id" property="accountId"/>
+        <result column="unix_host" property="unixHost"/>
+        <result column="os_username" property="osUsername"/>
+        <result column="login_passwd" property="loginPasswd"/>
+        <result column="status" property="status"/>
+        <result column="create_date" property="createDate"/>
+        <result column="pause_date" property="pauseDate"/>
+        <result column="close_date" property="closeDate"/>
+        <result column="cost_id" property="cost_id"/>
+        <result column="idcard_no" property="idcardNo"/>
+        <result column="name" property="name"/>
+        <result column="real_name" property="realname"/>
+        <result column="base_duration" property="baseduration"/>
+        <result column="base_cost" property="basecost"/>
+        <result column="unit_cost" property="unitcost"/>
+        <result column="login_name" property="loginname"/>
+    </resultMap>
+    <insert id="add" parameterType="object">
+        insert into service (account_id,unix_host,os_username,login_passwd,status,create_date,cost_id)
+        VALUES(#{accountId},#{unixHost},#{osUsername},#{loginPasswd},1,CURRENT_TIMESTAMP(0),#{cost_id});
+    </insert>
+    <update id="change" parameterType="int">
+        UPDATE service
+        SET status = CASE
+        WHEN status = 1 THEN 0
+        ELSE 1
+        END,
+        create_date = CASE
+        WHEN status = 1 THEN CURRENT_TIMESTAMP(0)
+        ELSE NULL
+        END,
+        pause_date = CASE
+        WHEN status != 1 THEN CURRENT_TIMESTAMP(0)
+        ELSE NULL
+        END
+        WHERE service_id=#{serviceId};
+    </update>
+    <update id="update" parameterType="object">
+        update service set cost_id=#{cost_id} where service_id = #{serviceId};
+    </update>
+    <delete id="delete" parameterType="int">
+        UPDATE service SET status = 2, close_date = NOW() WHERE service_id = #{serviceId};
+    </delete>
+
+    <select id="findByPageAndCondition" parameterType="object" resultMap="serviceMap">
+        select  s.*,ac.idcard_no,ac.login_name,ac.real_name,c.name,c.base_duration,c.base_cost,c.unit_cost
+        from service s join account ac on s.account_id=ac.account_id
+        join cost c on s.cost_id=c.cost_id
+        <where>
+            <if test="osUsername!=null and osUsername!=''">
+                and os_username=#{osUsername}
+            </if>
+            <if test="unixHost!=null and unixHost!=''">
+                and unix_host=#{unixHost}
+            </if>
+            <if test="idcardNo!=null and idcardNo!=''">
+                and ac.idcard_no=#{idcardNo}
+            </if>
+            <if test="status!=null and status!=''">
+                and s.status=#{status}
+            </if>
+        </where>
+        order by s.service_id
+    </select>
+    <select id="findById" resultMap="serviceMap" parameterType="object">
+        SELECT s.*, ac.idcard_no, ac.real_name, c.name, c.base_duration, c.base_cost, c.unit_cost
+        FROM service s
+        JOIN account ac ON s.account_id = ac.account_id
+        JOIN cost c ON s.cost_id = c.cost_id
+        WHERE s.service_id = #{id};
+    </select>
+    <select id="findByidcardNo" resultMap="serviceMap">
+        select  ac.account_id,ac.login_name,ac.idcard_no,ac.real_name,c.name,c.base_duration,c.base_cost,c.unit_cost
+        from service s right join account ac on s.account_id=ac.account_id
+        left join cost c on s.cost_id=c.cost_id
+        where ac.idcard_no=#{idcardNo};
+    </select>
+</mapper>
